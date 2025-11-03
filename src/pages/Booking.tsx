@@ -109,7 +109,7 @@ const Booking = () => {
       .insert({
         customer_id: user.id,
         service_id: selectedService,
-        barber_id: selectedBarber || null,
+        barber_id: selectedBarber === 'any' ? null : selectedBarber,
         appointment_date: format(selectedDate, 'yyyy-MM-dd'),
         appointment_time: selectedTime,
         notes: notes,
@@ -173,7 +173,7 @@ const Booking = () => {
                     <SelectValue placeholder="Any available barber" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any available barber</SelectItem>
+                    <SelectItem value="any">Any available barber</SelectItem>
                     {barbers.map((barber) => (
                       <SelectItem key={barber.id} value={barber.id}>
                         <div className="flex items-center gap-2">
