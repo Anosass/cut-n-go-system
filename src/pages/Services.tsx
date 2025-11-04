@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Clock, DollarSign, Scissors } from "lucide-react";
 import { Link } from "react-router-dom";
+import classicHaircut from "@/assets/service-classic-haircut.jpg";
+import fade from "@/assets/service-fade.jpg";
+import beardTrim from "@/assets/service-beard-trim.jpg";
+import shave from "@/assets/service-shave.jpg";
+import kids from "@/assets/service-kids.jpg";
+import coloring from "@/assets/service-coloring.jpg";
+import combo from "@/assets/service-combo.jpg";
 
 interface Service {
   id: string;
@@ -13,7 +20,32 @@ interface Service {
   price: number;
   duration_minutes: number;
   category: string;
+  image_url?: string;
 }
+
+// Map service names to imported images
+const getServiceImage = (serviceName: string, category: string): string => {
+  const lowerName = serviceName.toLowerCase();
+  
+  if (lowerName.includes('classic') || lowerName.includes('haircut') && category === 'Haircuts') return classicHaircut;
+  if (lowerName.includes('fade') || lowerName.includes('modern')) return fade;
+  if (lowerName.includes('beard')) return beardTrim;
+  if (lowerName.includes('shave')) return shave;
+  if (lowerName.includes('kids') || lowerName.includes('child')) return kids;
+  if (lowerName.includes('color')) return coloring;
+  if (lowerName.includes('combo')) return combo;
+  if (lowerName.includes('round') || lowerName.includes('square') || lowerName.includes('oval')) return classicHaircut;
+  
+  // Default fallbacks by category
+  if (category === 'Haircuts') return classicHaircut;
+  if (category === 'Beard Services') return beardTrim;
+  if (category === 'Shaves') return shave;
+  if (category === 'Combos') return combo;
+  if (category === 'Kids Services') return kids;
+  if (category === 'Styling') return coloring;
+  
+  return classicHaircut;
+};
 
 const Services = () => {
   const [services, setServices] = useState<Service[]>([]);
@@ -75,29 +107,39 @@ const Services = () => {
                     {categoryServices.map((service) => (
                       <Card 
                         key={service.id} 
-                        className="p-6 hover:shadow-[var(--shadow-gold)] transition-all group"
+                        className="overflow-hidden hover:shadow-[var(--shadow-gold)] transition-all group"
                       >
-                        <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors">
-                          {service.name}
-                        </h3>
-                        <p className="text-muted-foreground mb-4">
-                          {service.description}
-                        </p>
-                        <div className="flex items-center gap-4 mb-4">
-                          <div className="flex items-center gap-2 text-primary">
-                            <DollarSign className="h-5 w-5" />
-                            <span className="text-xl font-bold">${service.price}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Clock className="h-5 w-5" />
-                            <span>{service.duration_minutes} min</span>
-                          </div>
+                        <div className="relative h-48 overflow-hidden">
+                          <img 
+                            src={getServiceImage(service.name, service.category)}
+                            alt={service.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
                         </div>
-                        <Link to="/booking" state={{ serviceId: service.id }}>
-                          <Button className="w-full">
-                            Book This Service
-                          </Button>
-                        </Link>
+                        <div className="p-6">
+                          <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors">
+                            {service.name}
+                          </h3>
+                          <p className="text-muted-foreground mb-4 line-clamp-3">
+                            {service.description}
+                          </p>
+                          <div className="flex items-center gap-4 mb-4">
+                            <div className="flex items-center gap-2 text-primary">
+                              <DollarSign className="h-5 w-5" />
+                              <span className="text-xl font-bold">${service.price}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Clock className="h-5 w-5" />
+                              <span>{service.duration_minutes} min</span>
+                            </div>
+                          </div>
+                          <Link to="/booking" state={{ serviceId: service.id }}>
+                            <Button className="w-full">
+                              Book This Service
+                            </Button>
+                          </Link>
+                        </div>
                       </Card>
                     ))}
                   </div>
