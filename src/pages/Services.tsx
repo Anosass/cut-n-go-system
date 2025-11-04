@@ -12,6 +12,9 @@ import shave from "@/assets/service-shave.jpg";
 import kids from "@/assets/service-kids.jpg";
 import coloring from "@/assets/service-coloring.jpg";
 import combo from "@/assets/service-combo.jpg";
+import juice from "@/assets/service-juice.jpg";
+import tea from "@/assets/service-tea.jpg";
+import coffee from "@/assets/service-coffee.jpg";
 
 interface Service {
   id: string;
@@ -34,6 +37,9 @@ const getServiceImage = (serviceName: string, category: string): string => {
   if (lowerName.includes('kids') || lowerName.includes('child')) return kids;
   if (lowerName.includes('color')) return coloring;
   if (lowerName.includes('combo')) return combo;
+  if (lowerName.includes('juice')) return juice;
+  if (lowerName.includes('tea')) return tea;
+  if (lowerName.includes('coffee')) return coffee;
   if (lowerName.includes('round') || lowerName.includes('square') || lowerName.includes('oval')) return classicHaircut;
   
   // Default fallbacks by category
@@ -43,6 +49,7 @@ const getServiceImage = (serviceName: string, category: string): string => {
   if (category === 'Combos') return combo;
   if (category === 'Kids Services') return kids;
   if (category === 'Styling') return coloring;
+  if (category === 'Beverages') return coffee;
   
   return classicHaircut;
 };
