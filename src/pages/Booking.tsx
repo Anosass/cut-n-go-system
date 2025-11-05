@@ -75,8 +75,9 @@ const Booking = () => {
   const fetchServices = async () => {
     const { data } = await supabase
       .from('services')
-      .select('id, name, price, duration_minutes')
+      .select('id, name, price, duration_minutes, category')
       .eq('is_active', true)
+      .neq('category', 'Beverages') // Exclude beverages from appointment booking
       .order('name');
     
     if (data) setServices(data);
@@ -104,13 +105,43 @@ const Booking = () => {
 
     setLoading(true);
 
+    // Check for time conflicts
+    const appointmentDate = format(selectedDate, 'yyyy-MM-dd');
+    const barberId = selectedBarber === 'any' ? null : selectedBarber;
+
+    // Query for existing appointments at the same time
+    let conflictQuery = supabase
+      .from('appointments')
+      .select('id')
+      .eq('appointment_date', appointmentDate)
+      .eq('appointment_time', selectedTime)
+      .neq('status', 'cancelled');
+
+    // If a specific barber is selected, check for that barber's availability
+    if (barberId) {
+      conflictQuery = conflictQuery.eq('barber_id', barberId);
+    }
+
+    const { data: conflicts } = await conflictQuery;
+
+    if (conflicts && conflicts.length > 0) {
+      setLoading(false);
+      toast({
+        title: "Time slot unavailable",
+        description: "This time slot is already booked. Please choose a different time.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Proceed with booking if no conflicts
     const { error } = await supabase
       .from('appointments')
       .insert({
         customer_id: user.id,
         service_id: selectedService,
-        barber_id: selectedBarber === 'any' ? null : selectedBarber,
-        appointment_date: format(selectedDate, 'yyyy-MM-dd'),
+        barber_id: barberId,
+        appointment_date: appointmentDate,
         appointment_time: selectedTime,
         notes: notes,
         status: 'pending'

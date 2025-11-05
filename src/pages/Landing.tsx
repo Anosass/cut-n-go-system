@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Calendar, Clock, Star, Scissors } from "lucide-react";
+import { Calendar, Clock, Star, Scissors, Coffee } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import heroImage from "@/assets/hero-barbershop.jpg";
 import haircutImage from "@/assets/service-haircut.jpg";
@@ -39,7 +39,14 @@ const Landing = () => {
             </Link>
             <Link to="/services">
               <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+                <Scissors className="mr-2 h-5 w-5" />
                 View Services
+              </Button>
+            </Link>
+            <Link to="/beverages">
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+                <Coffee className="mr-2 h-5 w-5" />
+                Beverages
               </Button>
             </Link>
           </div>
