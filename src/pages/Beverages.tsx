@@ -4,12 +4,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Coffee, DollarSign, ShoppingCart } from "lucide-react";
-import { Link } from "react-router-dom";
 import juice from "@/assets/service-juice.jpg";
 import tea from "@/assets/service-tea.jpg";
 import coffee from "@/assets/service-coffee.jpg";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { BeverageCart } from "@/components/BeverageCart";
 
 interface Beverage {
   id: string;
@@ -61,42 +61,49 @@ const Beverages = () => {
     setLoading(false);
   };
 
-  const handleOrder = async (beverage: Beverage) => {
+  const addToCart = async (beverage: Beverage) => {
     if (!user) {
       toast({
         title: "Authentication required",
-        description: "Please login to order beverages",
+        description: "Please login to add items to cart",
         variant: "destructive",
       });
       navigate("/auth");
       return;
     }
 
-    // For beverages, create a simple order without barber or time slot
     const { error } = await supabase
-      .from('appointments')
-      .insert({
-        customer_id: user.id,
+      .from('cart_items')
+      .upsert({
+        user_id: user.id,
         service_id: beverage.id,
-        barber_id: null, // No barber needed for beverages
-        appointment_date: new Date().toISOString().split('T')[0],
-        appointment_time: new Date().toTimeString().split(' ')[0].substring(0, 5),
-        notes: 'Beverage order',
-        status: 'pending'
+        quantity: 1
+      }, {
+        onConflict: 'user_id,service_id',
+        ignoreDuplicates: false
       });
 
     if (error) {
-      toast({
-        title: "Order failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success!",
-        description: `Your ${beverage.name} has been ordered successfully`,
-      });
+      // If item exists, increment quantity
+      const { data: existing } = await supabase
+        .from('cart_items')
+        .select('id, quantity')
+        .eq('user_id', user.id)
+        .eq('service_id', beverage.id)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('cart_items')
+          .update({ quantity: existing.quantity + 1 })
+          .eq('id', existing.id);
+      }
     }
+
+    toast({
+      title: "Added to cart",
+      description: `${beverage.name} has been added to your cart`,
+    });
   };
 
   return (
@@ -105,14 +112,22 @@ const Beverages = () => {
       
       <div className="pt-24 pb-16 px-4">
         <div className="container mx-auto">
-          <div className="text-center mb-12 animate-fade-up">
-            <Coffee className="h-16 w-16 text-primary mx-auto mb-4" />
-            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent">
-              Beverages Menu
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Enjoy premium beverages while you wait or take them to go
-            </p>
+          <div className="flex justify-between items-center mb-12">
+            <div className="text-center flex-1 animate-fade-up">
+              <Coffee className="h-16 w-16 text-primary mx-auto mb-4" />
+              <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent">
+                Beverages Menu
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Enjoy premium beverages while you wait or take them to go
+              </p>
+            </div>
+            
+            {user && (
+              <div className="ml-4">
+                <BeverageCart userId={user.id} />
+              </div>
+            )}
           </div>
 
           {loading ? (
@@ -152,11 +167,11 @@ const Beverages = () => {
                       </div>
                       
                       <Button 
-                        onClick={() => handleOrder(beverage)}
+                        onClick={() => addToCart(beverage)}
                         className="gap-2"
                       >
                         <ShoppingCart className="h-4 w-4" />
-                        Order Now
+                        Add to Cart
                       </Button>
                     </div>
                   </div>

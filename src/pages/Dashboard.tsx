@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Navbar } from "@/components/Navbar";
+import { LoyaltyPoints } from "@/components/LoyaltyPoints";
+import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 import { Calendar, Clock, User as UserIcon, MapPin, Phone, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -155,9 +157,26 @@ const Dashboard = () => {
             My Dashboard
           </h1>
 
+          <div className="grid lg:grid-cols-3 gap-6 mb-8">
+            <div className="lg:col-span-2">
+              {user && <LoyaltyPoints userId={user.id} />}
+            </div>
+            <div>
+              <Card className="p-4 bg-card/50 backdrop-blur-sm">
+                <Button onClick={() => navigate("/booking")} className="w-full mb-2">
+                  Book New Appointment
+                </Button>
+                <Button onClick={() => navigate("/beverages")} variant="outline" className="w-full">
+                  Order Beverages
+                </Button>
+              </Card>
+            </div>
+          </div>
+
           <Tabs defaultValue="appointments" className="space-y-6">
             <TabsList>
               <TabsTrigger value="appointments">Appointments</TabsTrigger>
+              <TabsTrigger value="availability">Availability</TabsTrigger>
               <TabsTrigger value="profile">Profile</TabsTrigger>
             </TabsList>
 
@@ -256,6 +275,10 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
+            </TabsContent>
+
+            <TabsContent value="availability">
+              <AvailabilityCalendar />
             </TabsContent>
 
             <TabsContent value="profile">
