@@ -204,6 +204,27 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_tokens: {
+        Row: {
+          created_at: string | null
+          id: string
+          token: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          token: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          token?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       points_transactions: {
         Row: {
           created_at: string | null
@@ -264,6 +285,109 @@ export type Database = {
         }
         Relationships: []
       }
+      redemptions: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          points_spent: number
+          reward_id: string
+          status: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          points_spent: number
+          reward_id: string
+          status?: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          points_spent?: number
+          reward_id?: string
+          status?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          appointment_id: string | null
+          awarded_at: string | null
+          created_at: string | null
+          id: string
+          points_awarded: number
+          referee_id: string
+          referrer_id: string
+          status: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          awarded_at?: string | null
+          created_at?: string | null
+          id?: string
+          points_awarded?: number
+          referee_id: string
+          referrer_id: string
+          status?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          awarded_at?: string | null
+          created_at?: string | null
+          id?: string
+          points_awarded?: number
+          referee_id?: string
+          referrer_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           appointment_id: string
@@ -272,6 +396,7 @@ export type Database = {
           created_at: string | null
           customer_id: string
           id: string
+          photos: string[] | null
           rating: number
         }
         Insert: {
@@ -281,6 +406,7 @@ export type Database = {
           created_at?: string | null
           customer_id: string
           id?: string
+          photos?: string[] | null
           rating: number
         }
         Update: {
@@ -290,6 +416,7 @@ export type Database = {
           created_at?: string | null
           customer_id?: string
           id?: string
+          photos?: string[] | null
           rating?: number
         }
         Relationships: [
@@ -308,6 +435,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      rewards: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean | null
+          name: string
+          points_cost: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          id?: string
+          is_active?: boolean | null
+          name: string
+          points_cost: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          points_cost?: number
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       services: {
         Row: {
@@ -413,12 +576,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_referral_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      redeem_reward: {
+        Args: { _reward_id: string; _user_id: string }
+        Returns: Json
       }
     }
     Enums: {
