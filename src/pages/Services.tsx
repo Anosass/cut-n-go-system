@@ -3,8 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
-import { Calendar, DollarSign, Scissors } from "lucide-react";
+import { Calendar, DollarSign, Scissors, ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import classicHaircut from "@/assets/service-classic-haircut.jpg";
 import fade from "@/assets/service-fade.jpg";
 import beardTrim from "@/assets/service-beard-trim.jpg";
@@ -25,6 +30,35 @@ interface Service {
   category: string;
   image_url?: string;
 }
+
+interface ServiceAdvice {
+  styling: string[];
+  faceShapes: string[];
+  maintenance: string[];
+}
+
+const haircutAdvice: Record<string, ServiceAdvice> = {
+  classic: {
+    styling: ["Apply light pomade for a polished look", "Use a comb for precise styling", "Blow dry for added volume"],
+    faceShapes: ["Oval", "Square", "Rectangle"],
+    maintenance: ["Trim every 4-6 weeks", "Shampoo 3-4 times per week", "Use quality hair products"]
+  },
+  fade: {
+    styling: ["Keep the top slightly textured", "Use matte clay for natural hold", "Style with fingers for casual look"],
+    faceShapes: ["Round", "Oval", "Heart-shaped"],
+    maintenance: ["Touch-up fade every 2-3 weeks", "Moisturize scalp regularly", "Clean neckline between cuts"]
+  },
+  modern: {
+    styling: ["Apply styling cream to damp hair", "Create texture with sea salt spray", "Use heat protectant before blow drying"],
+    faceShapes: ["All face shapes", "Especially suits angular faces"],
+    maintenance: ["Trim every 3-5 weeks", "Deep condition weekly", "Avoid over-washing"]
+  },
+  default: {
+    styling: ["Use quality styling products", "Brush or comb as needed", "Consider your hair type when styling"],
+    faceShapes: ["Consult with your barber for personalized advice"],
+    maintenance: ["Regular trims maintain shape", "Proper washing routine is key", "Protect from heat damage"]
+  }
+};
 
 // Map service names to imported images
 const getServiceImage = (serviceName: string, category: string): string => {
@@ -54,9 +88,18 @@ const getServiceImage = (serviceName: string, category: string): string => {
   return classicHaircut;
 };
 
+const getAdviceForService = (serviceName: string): ServiceAdvice => {
+  const lowerName = serviceName.toLowerCase();
+  if (lowerName.includes('classic')) return haircutAdvice.classic;
+  if (lowerName.includes('fade')) return haircutAdvice.fade;
+  if (lowerName.includes('modern')) return haircutAdvice.modern;
+  return haircutAdvice.default;
+};
+
 const Services = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedServices, setExpandedServices] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchServices();
@@ -74,6 +117,18 @@ const Services = () => {
       setServices(data);
     }
     setLoading(false);
+  };
+
+  const toggleServiceAdvice = (serviceId: string) => {
+    setExpandedServices(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(serviceId)) {
+        newSet.delete(serviceId);
+      } else {
+        newSet.add(serviceId);
+      }
+      return newSet;
+    });
   };
 
   const groupedServices = services.reduce((acc, service) => {
@@ -117,51 +172,96 @@ const Services = () => {
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {categoryServices.map((service, serviceIndex) => (
-                      <Card 
-                        key={service.id} 
-                        className="overflow-hidden hover:shadow-[var(--shadow-gold)] transition-all duration-500 group bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/30 hover:-translate-y-2"
-                        style={{ animationDelay: `${(index * 0.1) + (serviceIndex * 0.05)}s` }}
-                      >
-                        <div className="relative h-56 overflow-hidden">
-                          <img 
-                            src={getServiceImage(service.name, service.category)}
-                            alt={service.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-                          <div className="absolute top-4 right-4">
-                            <div className="bg-primary/90 backdrop-blur-sm text-primary-foreground px-3 py-1 rounded-full text-sm font-bold">
-                              {service.duration_minutes} min
+                    {categoryServices.map((service, serviceIndex) => {
+                      const isHaircut = category === "Haircuts";
+                      const advice = isHaircut ? getAdviceForService(service.name) : null;
+                      const isExpanded = expandedServices.has(service.id);
+                      
+                      return (
+                        <Card 
+                          key={service.id} 
+                          className="overflow-hidden hover:shadow-[var(--shadow-gold)] transition-all duration-500 group bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/30 hover:-translate-y-2"
+                          style={{ animationDelay: `${(index * 0.1) + (serviceIndex * 0.05)}s` }}
+                        >
+                          <div className="relative h-56 overflow-hidden">
+                            <img 
+                              src={getServiceImage(service.name, service.category)}
+                              alt={service.name}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+                            <div className="absolute top-4 right-4">
+                              <div className="bg-primary/90 backdrop-blur-sm text-primary-foreground px-3 py-1 rounded-full text-sm font-bold">
+                                {service.duration_minutes} min
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        
-                        <div className="p-6 space-y-4">
-                          <h3 className="text-2xl font-bold group-hover:text-primary transition-colors duration-300">
-                            {service.name}
-                          </h3>
                           
-                          <p className="text-muted-foreground line-clamp-2 leading-relaxed min-h-[3rem]">
-                            {service.description}
-                          </p>
-                          
-                          <div className="flex items-center justify-between pt-2">
-                            <div className="flex items-center gap-2">
-                              <DollarSign className="h-6 w-6 text-primary" />
-                              <span className="text-3xl font-bold text-primary">${service.price}</span>
-                            </div>
+                          <div className="p-6 space-y-4">
+                            <h3 className="text-2xl font-bold group-hover:text-primary transition-colors duration-300">
+                              {service.name}
+                            </h3>
                             
-                            <Link to="/booking" state={{ serviceId: service.id }}>
-                              <Button className="gap-2 group-hover:shadow-lg transition-shadow">
-                                <Calendar className="h-4 w-4" />
-                                Book Now
-                              </Button>
-                            </Link>
+                            <p className="text-muted-foreground line-clamp-2 leading-relaxed min-h-[3rem]">
+                              {service.description}
+                            </p>
+                            
+                            <div className="flex items-center justify-between pt-2">
+                              <div className="flex items-center gap-2">
+                                <DollarSign className="h-6 w-6 text-primary" />
+                                <span className="text-3xl font-bold text-primary">${service.price}</span>
+                              </div>
+                              
+                              <Link to="/booking" state={{ serviceId: service.id }}>
+                                <Button className="gap-2 group-hover:shadow-lg transition-shadow">
+                                  <Calendar className="h-4 w-4" />
+                                  Book Now
+                                </Button>
+                              </Link>
+                            </div>
+
+                            {isHaircut && advice && (
+                              <Collapsible open={isExpanded} onOpenChange={() => toggleServiceAdvice(service.id)}>
+                                <CollapsibleTrigger className="w-full">
+                                  <Button 
+                                    variant="outline" 
+                                    className="w-full mt-2 gap-2"
+                                    onClick={(e) => e.preventDefault()}
+                                  >
+                                    {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                    Styling Advice
+                                  </Button>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent className="mt-4 space-y-4 text-sm">
+                                  <div className="space-y-2">
+                                    <h4 className="font-semibold text-primary">Styling Tips</h4>
+                                    <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                                      {advice.styling.map((tip, i) => (
+                                        <li key={i}>{tip}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <h4 className="font-semibold text-primary">Best for Face Shapes</h4>
+                                    <p className="text-muted-foreground">{advice.faceShapes.join(", ")}</p>
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <h4 className="font-semibold text-primary">Maintenance</h4>
+                                    <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                                      {advice.maintenance.map((tip, i) => (
+                                        <li key={i}>{tip}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                </CollapsibleContent>
+                              </Collapsible>
+                            )}
                           </div>
-                        </div>
-                      </Card>
-                    ))}
+                        </Card>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
