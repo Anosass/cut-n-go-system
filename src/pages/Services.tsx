@@ -219,9 +219,15 @@ const Services = () => {
             <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent">
               Our Services
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-6">
               Premium grooming services tailored to perfection
             </p>
+            <Link to="/face-shape-quiz">
+              <Button variant="outline" className="gap-2">
+                <Scissors className="h-4 w-4" />
+                Take Our Face Shape Quiz
+              </Button>
+            </Link>
           </div>
 
           {loading ? (

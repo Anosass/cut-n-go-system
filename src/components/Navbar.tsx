@@ -64,6 +64,9 @@ export const Navbar = () => {
             <Link to="/services" className="text-sm font-medium hover:text-primary transition-colors">
               Services
             </Link>
+            <Link to="/face-shape-quiz" className="text-sm font-medium hover:text-primary transition-colors">
+              Face Shape Quiz
+            </Link>
             <Link to="/booking" className="text-sm font-medium hover:text-primary transition-colors">
               Book Now
             </Link>
