@@ -292,12 +292,12 @@ const Services = () => {
                               <Collapsible open={isExpanded} onOpenChange={() => toggleServiceAdvice(service.id)}>
                                 <CollapsibleTrigger className="w-full">
                                   <Button 
-                                    variant="outline" 
-                                    className="w-full mt-2 gap-2"
+                                    variant="secondary" 
+                                    className="w-full mt-2 gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20"
                                     onClick={(e) => e.preventDefault()}
                                   >
                                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                    Styling Advice
+                                    Professional Styling Advice
                                   </Button>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent className="mt-4 space-y-4 text-sm">
