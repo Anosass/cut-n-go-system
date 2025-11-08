@@ -37,26 +37,63 @@ interface ServiceAdvice {
   maintenance: string[];
 }
 
-const haircutAdvice: Record<string, ServiceAdvice> = {
-  classic: {
-    styling: ["Apply light pomade for a polished look", "Use a comb for precise styling", "Blow dry for added volume"],
-    faceShapes: ["Oval", "Square", "Rectangle"],
-    maintenance: ["Trim every 4-6 weeks", "Shampoo 3-4 times per week", "Use quality hair products"]
+const serviceAdvice: Record<string, Record<string, ServiceAdvice>> = {
+  haircuts: {
+    classic: {
+      styling: ["Apply light pomade for a polished look", "Use a comb for precise styling", "Blow dry for added volume"],
+      faceShapes: ["Oval", "Square", "Rectangle"],
+      maintenance: ["Trim every 4-6 weeks", "Shampoo 3-4 times per week", "Use quality hair products"]
+    },
+    fade: {
+      styling: ["Keep the top slightly textured", "Use matte clay for natural hold", "Style with fingers for casual look"],
+      faceShapes: ["Round", "Oval", "Heart-shaped"],
+      maintenance: ["Touch-up fade every 2-3 weeks", "Moisturize scalp regularly", "Clean neckline between cuts"]
+    },
+    modern: {
+      styling: ["Apply styling cream to damp hair", "Create texture with sea salt spray", "Use heat protectant before blow drying"],
+      faceShapes: ["All face shapes", "Especially suits angular faces"],
+      maintenance: ["Trim every 3-5 weeks", "Deep condition weekly", "Avoid over-washing"]
+    }
   },
-  fade: {
-    styling: ["Keep the top slightly textured", "Use matte clay for natural hold", "Style with fingers for casual look"],
-    faceShapes: ["Round", "Oval", "Heart-shaped"],
-    maintenance: ["Touch-up fade every 2-3 weeks", "Moisturize scalp regularly", "Clean neckline between cuts"]
+  beard: {
+    trim: {
+      styling: ["Use beard oil daily for softness", "Comb beard to distribute oils evenly", "Shape edges with precision trimmer"],
+      faceShapes: ["Square", "Rectangle", "Diamond"],
+      maintenance: ["Trim every 2-3 weeks", "Wash beard 2-3 times per week", "Apply balm for hold and shape"]
+    },
+    full: {
+      styling: ["Apply beard butter for moisture", "Use a boar bristle brush", "Shape with heated beard straightener if needed"],
+      faceShapes: ["Oval", "Round", "Triangle"],
+      maintenance: ["Professional trim monthly", "Daily brushing required", "Use conditioner regularly"]
+    }
   },
-  modern: {
-    styling: ["Apply styling cream to damp hair", "Create texture with sea salt spray", "Use heat protectant before blow drying"],
-    faceShapes: ["All face shapes", "Especially suits angular faces"],
-    maintenance: ["Trim every 3-5 weeks", "Deep condition weekly", "Avoid over-washing"]
+  shave: {
+    classic: {
+      styling: ["Apply pre-shave oil", "Use hot towel before shaving", "Finish with aftershave balm"],
+      faceShapes: ["All face shapes"],
+      maintenance: ["Moisturize daily", "Exfoliate 2-3 times per week", "Use sunscreen on clean-shaven skin"]
+    }
+  },
+  kids: {
+    default: {
+      styling: ["Keep it simple and easy to manage", "Use gentle styling products", "Make it fun for the child"],
+      faceShapes: ["Age-appropriate cuts for all face shapes"],
+      maintenance: ["Trim every 4-6 weeks", "Use tear-free shampoo", "Regular combing to prevent tangles"]
+    }
+  },
+  styling: {
+    coloring: {
+      styling: ["Use color-safe shampoo", "Avoid excessive heat styling", "Apply color-protecting serum"],
+      faceShapes: ["All face shapes - color enhances any style"],
+      maintenance: ["Touch up roots every 4-6 weeks", "Deep condition weekly", "Use purple shampoo for blondes"]
+    }
   },
   default: {
-    styling: ["Use quality styling products", "Brush or comb as needed", "Consider your hair type when styling"],
-    faceShapes: ["Consult with your barber for personalized advice"],
-    maintenance: ["Regular trims maintain shape", "Proper washing routine is key", "Protect from heat damage"]
+    general: {
+      styling: ["Consult your barber for personalized advice", "Use quality products suited to your hair type"],
+      faceShapes: ["Consult with your barber for personalized advice"],
+      maintenance: ["Regular maintenance keeps your look fresh", "Follow your barber's care instructions"]
+    }
   }
 };
 
@@ -88,12 +125,44 @@ const getServiceImage = (serviceName: string, category: string): string => {
   return classicHaircut;
 };
 
-const getAdviceForService = (serviceName: string): ServiceAdvice => {
+const getAdviceForService = (serviceName: string, category: string): ServiceAdvice | null => {
   const lowerName = serviceName.toLowerCase();
-  if (lowerName.includes('classic')) return haircutAdvice.classic;
-  if (lowerName.includes('fade')) return haircutAdvice.fade;
-  if (lowerName.includes('modern')) return haircutAdvice.modern;
-  return haircutAdvice.default;
+  const lowerCategory = category.toLowerCase();
+  
+  // Haircuts
+  if (lowerCategory.includes('haircut')) {
+    if (lowerName.includes('classic')) return serviceAdvice.haircuts.classic;
+    if (lowerName.includes('fade') || lowerName.includes('modern')) return serviceAdvice.haircuts.fade;
+    return serviceAdvice.haircuts.modern;
+  }
+  
+  // Beard Services
+  if (lowerCategory.includes('beard')) {
+    if (lowerName.includes('trim')) return serviceAdvice.beard.trim;
+    return serviceAdvice.beard.full;
+  }
+  
+  // Shaves
+  if (lowerCategory.includes('shave')) {
+    return serviceAdvice.shave.classic;
+  }
+  
+  // Kids Services
+  if (lowerCategory.includes('kids') || lowerCategory.includes('child')) {
+    return serviceAdvice.kids.default;
+  }
+  
+  // Styling/Coloring
+  if (lowerCategory.includes('styling') || lowerName.includes('color')) {
+    return serviceAdvice.styling.coloring;
+  }
+  
+  // Combos - use general advice
+  if (lowerCategory.includes('combo')) {
+    return serviceAdvice.default.general;
+  }
+  
+  return null;
 };
 
 const Services = () => {
@@ -173,8 +242,7 @@ const Services = () => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {categoryServices.map((service, serviceIndex) => {
-                      const isHaircut = category === "Haircuts";
-                      const advice = isHaircut ? getAdviceForService(service.name) : null;
+                      const advice = getAdviceForService(service.name, service.category);
                       const isExpanded = expandedServices.has(service.id);
                       
                       return (
@@ -220,7 +288,7 @@ const Services = () => {
                               </Link>
                             </div>
 
-                            {isHaircut && advice && (
+                            {advice && (
                               <Collapsible open={isExpanded} onOpenChange={() => toggleServiceAdvice(service.id)}>
                                 <CollapsibleTrigger className="w-full">
                                   <Button 
