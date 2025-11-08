@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import Barber from "./pages/Barber";
 import FaceShapeQuiz from "./pages/FaceShapeQuiz";
+import BarberProfiles from "./pages/BarberProfiles";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/admin" element={<Admin />} />
           <Route path="/barber" element={<Barber />} />
           <Route path="/face-shape-quiz" element={<FaceShapeQuiz />} />
+          <Route path="/barbers" element={<BarberProfiles />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
