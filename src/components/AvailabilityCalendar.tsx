@@ -119,18 +119,24 @@ export const AvailabilityCalendar = ({ barberId }: { barberId?: string }) => {
               </p>
             ) : (
               timeSlots.map((slot) => (
-                <Badge
-                  key={slot.time}
-                  variant={slot.isAvailable ? "outline" : "secondary"}
-                  className={`justify-center py-2 ${
-                    slot.isAvailable
-                      ? 'border-green-500/50 text-green-600 dark:text-green-400'
-                      : 'bg-destructive/10 text-destructive border-destructive/20'
-                  }`}
-                >
-                  <Clock className="h-3 w-3 mr-1" />
-                  {slot.time}
-                </Badge>
+                <div key={slot.time} className="flex flex-col items-center gap-1">
+                  <Badge
+                    variant={slot.isAvailable ? "outline" : "destructive"}
+                    className={`justify-center py-2 w-full ${
+                      slot.isAvailable
+                        ? 'bg-green-500/10 border-green-500 text-green-600 dark:text-green-400 hover:bg-green-500/20'
+                        : 'bg-destructive text-destructive-foreground border-destructive'
+                    }`}
+                  >
+                    <Clock className="h-3 w-3 mr-1" />
+                    {slot.time}
+                  </Badge>
+                  <span className={`text-xs font-medium ${
+                    slot.isAvailable ? 'text-green-600 dark:text-green-400' : 'text-destructive'
+                  }`}>
+                    {slot.isAvailable ? 'Available' : 'Booked'}
+                  </span>
+                </div>
               ))
             )}
           </div>

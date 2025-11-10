@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star, Scissors, Calendar, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 
 interface Barber {
   id: string;
@@ -212,11 +213,16 @@ const BarberProfiles = () => {
                     </div>
 
                     {/* Tabs Section */}
-                    <Tabs defaultValue="portfolio" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
+                    <Tabs defaultValue="availability" className="w-full">
+                      <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="availability">Availability</TabsTrigger>
                         <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
                         <TabsTrigger value="reviews">Reviews</TabsTrigger>
                       </TabsList>
+
+                      <TabsContent value="availability" className="mt-6">
+                        <AvailabilityCalendar barberId={barber.id} />
+                      </TabsContent>
 
                       <TabsContent value="portfolio" className="mt-6">
                         {barber.gallery.length > 0 ? (
