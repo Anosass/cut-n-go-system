@@ -110,25 +110,35 @@ const Booking = () => {
     const barberId = selectedBarber === 'any' ? null : selectedBarber;
 
     // Query for existing appointments at the same time
-    let conflictQuery = supabase
+    const conflictQuery = supabase
       .from('appointments')
-      .select('id')
+      .select('id, barber_id')
       .eq('appointment_date', appointmentDate)
       .eq('appointment_time', selectedTime)
       .neq('status', 'cancelled');
 
-    // If a specific barber is selected, check for that barber's availability
-    if (barberId) {
-      conflictQuery = conflictQuery.eq('barber_id', barberId);
-    }
-
     const { data: conflicts } = await conflictQuery;
 
-    if (conflicts && conflicts.length > 0) {
+    // If a specific barber is selected, check if that barber has a conflict
+    if (barberId && conflicts && conflicts.length > 0) {
+      const barberConflict = conflicts.find(apt => apt.barber_id === barberId);
+      if (barberConflict) {
+        setLoading(false);
+        toast({
+          title: "Time slot unavailable",
+          description: "This barber is already booked at this time. Please choose a different time or barber.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
+    // If no specific barber selected, check if ALL barbers are booked
+    if (!barberId && conflicts && conflicts.length >= barbers.length) {
       setLoading(false);
       toast({
         title: "Time slot unavailable",
-        description: "This time slot is already booked. Please choose a different time.",
+        description: "All barbers are booked at this time. Please choose a different time.",
         variant: "destructive",
       });
       return;
