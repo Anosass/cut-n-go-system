@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 interface Appointment {
@@ -29,9 +30,16 @@ interface Profile {
   address: string;
 }
 
+interface Barber {
+  id: string;
+  name: string;
+}
+
 const Dashboard = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [selectedBarber, setSelectedBarber] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
@@ -39,6 +47,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     checkAuth();
+    fetchBarbers();
   }, []);
 
   const checkAuth = async () => {
@@ -78,6 +87,21 @@ const Dashboard = () => {
 
     if (data) {
       setProfile(data);
+    }
+  };
+
+  const fetchBarbers = async () => {
+    const { data } = await supabase
+      .from('barbers')
+      .select('id, name')
+      .eq('is_active', true)
+      .order('name');
+    
+    if (data) {
+      setBarbers(data);
+      if (data.length > 0) {
+        setSelectedBarber(data[0].id); // Auto-select first barber
+      }
     }
   };
 
@@ -278,7 +302,32 @@ const Dashboard = () => {
             </TabsContent>
 
             <TabsContent value="availability">
-              <AvailabilityCalendar />
+              <div className="space-y-4">
+                <Card className="p-4 bg-card/50 backdrop-blur-sm">
+                  <Label htmlFor="barber-select" className="text-base font-semibold mb-2 block">
+                    Select Barber to View Availability
+                  </Label>
+                  <Select value={selectedBarber} onValueChange={setSelectedBarber}>
+                    <SelectTrigger id="barber-select">
+                      <SelectValue placeholder="Choose a barber" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {barbers.map((barber) => (
+                        <SelectItem key={barber.id} value={barber.id}>
+                          <div className="flex items-center gap-2">
+                            <UserIcon className="h-4 w-4" />
+                            {barber.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Card>
+                
+                {selectedBarber && (
+                  <AvailabilityCalendar barberId={selectedBarber} />
+                )}
+              </div>
             </TabsContent>
 
             <TabsContent value="profile">
