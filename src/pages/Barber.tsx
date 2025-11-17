@@ -37,13 +37,28 @@ const Barber = () => {
       return;
     }
 
-    const { data: barber } = await supabase
+    const { data: barber, error } = await supabase
       .from('barbers')
       .select('id')
       .eq('user_id', session.user.id)
-      .single();
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching barber:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load barber profile",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (!barber) {
+      toast({
+        title: "No Barber Profile",
+        description: "You need a barber profile to access this page. Please contact an admin.",
+        variant: "destructive",
+      });
       navigate("/");
       return;
     }
