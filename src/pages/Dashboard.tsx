@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Navbar } from "@/components/Navbar";
 import { LoyaltyPoints } from "@/components/LoyaltyPoints";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
+import { WaitingListManager } from "@/components/WaitingListManager";
 import { Calendar, Clock, User as UserIcon, MapPin, Phone, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -200,6 +201,7 @@ const Dashboard = () => {
           <Tabs defaultValue="appointments" className="space-y-6">
             <TabsList>
               <TabsTrigger value="appointments">Appointments</TabsTrigger>
+              <TabsTrigger value="waiting-list">Waiting List</TabsTrigger>
               <TabsTrigger value="availability">Availability</TabsTrigger>
               <TabsTrigger value="profile">Profile</TabsTrigger>
             </TabsList>
@@ -298,6 +300,13 @@ const Dashboard = () => {
                     ))}
                   </div>
                 )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="waiting-list">
+              <div>
+                <h2 className="text-2xl font-bold mb-4">My Waiting List</h2>
+                <WaitingListManager />
               </div>
             </TabsContent>
 

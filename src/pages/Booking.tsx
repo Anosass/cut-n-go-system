@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Navbar } from "@/components/Navbar";
+import { WaitingListDialog } from "@/components/WaitingListDialog";
 import { Calendar as CalendarIcon, Clock, User as UserIcon, CheckCircle, XCircle } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -524,15 +525,18 @@ const Booking = () => {
                 />
               </div>
 
-              {/* Submit Button */}
-              <Button 
-                onClick={handleBooking} 
-                className="w-full" 
-                size="lg"
-                disabled={loading}
-              >
-                {loading ? "Booking..." : "Confirm Booking"}
-              </Button>
+              {/* Waiting List and Submit Button */}
+              <div className="flex gap-3">
+                <WaitingListDialog services={services} barbers={barbers} />
+                <Button 
+                  onClick={handleBooking} 
+                  className="flex-1" 
+                  size="lg"
+                  disabled={loading}
+                >
+                  {loading ? "Booking..." : "Confirm Booking"}
+                </Button>
+              </div>
             </div>
           </Card>
         </div>

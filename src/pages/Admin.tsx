@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Navbar } from "@/components/Navbar";
+import { AdminWaitingListSummary } from "@/components/AdminWaitingListSummary";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -28,6 +29,7 @@ interface Appointment {
   appointment_date: string;
   appointment_time: string;
   status: string;
+  barber_id: string | null;
   profiles: { full_name: string };
   services: { name: string; price: number };
   barbers: { name: string } | null;
@@ -129,6 +131,24 @@ const Admin = () => {
       .eq('id', appointmentId);
 
     if (!error) {
+      // If appointment was cancelled, trigger waiting list notifications
+      if (newStatus === 'cancelled') {
+        const appointment = appointments.find(apt => apt.id === appointmentId);
+        if (appointment) {
+          try {
+            await supabase.functions.invoke('notify-waiting-list', {
+              body: {
+                appointmentDate: appointment.appointment_date,
+                appointmentTime: appointment.appointment_time,
+                barberId: appointment.barber_id
+              }
+            });
+            console.log('Waiting list notified for cancelled appointment');
+          } catch (notifyError) {
+            console.error('Error notifying waiting list:', notifyError);
+          }
+        }
+      }
       fetchDashboardData();
     }
   };
@@ -146,7 +166,7 @@ const Admin = () => {
           </h1>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -186,6 +206,8 @@ const Admin = () => {
                 <DollarSign className="h-12 w-12 text-primary opacity-50" />
               </div>
             </Card>
+
+            <AdminWaitingListSummary />
           </div>
 
           {/* Appointments Management */}
