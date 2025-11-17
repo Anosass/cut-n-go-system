@@ -56,10 +56,10 @@ const Barber = () => {
     if (!barber) {
       toast({
         title: "No Barber Profile",
-        description: "You need a barber profile to access this page. Please contact an admin.",
+        description: "You need to create your barber profile first.",
         variant: "destructive",
       });
-      navigate("/");
+      navigate("/barber-profile-setup");
       return;
     }
 
