@@ -200,6 +200,64 @@ const Services = () => {
     });
   };
 
+  const getAdviceForService = (serviceName: string, category: string): ServiceAdvice => {
+    const categoryLower = category.toLowerCase();
+    const nameLower = serviceName.toLowerCase();
+
+    // Map service names to advice keys
+    if (categoryLower.includes('haircut')) {
+      if (nameLower.includes('fade')) return serviceAdvice.haircuts.fade;
+      if (nameLower.includes('classic')) return serviceAdvice.haircuts.classic;
+      return serviceAdvice.haircuts.modern;
+    }
+    
+    if (categoryLower.includes('beard')) {
+      if (nameLower.includes('full')) return serviceAdvice.beard.full;
+      return serviceAdvice.beard.trim;
+    }
+    
+    if (categoryLower.includes('shave')) {
+      return serviceAdvice.shave.classic;
+    }
+    
+    if (categoryLower.includes('kids')) {
+      return serviceAdvice.kids.default;
+    }
+    
+    if (categoryLower.includes('styling') || nameLower.includes('coloring')) {
+      return serviceAdvice.styling.coloring;
+    }
+    
+    return serviceAdvice.default.general;
+  };
+
+  const getServiceImage = (serviceName: string, category: string): string => {
+    const nameLower = serviceName.toLowerCase();
+    const categoryLower = category.toLowerCase();
+
+    // Beverages
+    if (nameLower.includes('juice')) return juice;
+    if (nameLower.includes('tea')) return tea;
+    if (nameLower.includes('coffee')) return coffee;
+
+    // Haircuts
+    if (nameLower.includes('classic')) return classicHaircut;
+    if (nameLower.includes('fade')) return fade;
+    if (categoryLower.includes('haircut')) return classicHaircut;
+
+    // Beard services
+    if (nameLower.includes('beard') && !nameLower.includes('trim')) return beardTrim;
+    if (nameLower.includes('trim')) return beardTrim;
+
+    // Other services
+    if (nameLower.includes('shave')) return shave;
+    if (nameLower.includes('kid')) return kids;
+    if (nameLower.includes('color')) return coloring;
+    if (nameLower.includes('combo')) return combo;
+
+    return classicHaircut; // default
+  };
+
   const groupedServices = services.reduce((acc, service) => {
     if (!acc[service.category]) {
       acc[service.category] = [];

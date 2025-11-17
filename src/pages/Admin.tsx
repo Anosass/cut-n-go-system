@@ -78,20 +78,16 @@ const Admin = () => {
       .select(`
         *,
         services (name, price),
-        barbers (name)
+        barbers (name),
+        profiles!appointments_customer_id_fkey (full_name)
       `)
       .order('appointment_date', { ascending: false });
-    
-    // Fetch profiles separately
-    const { data: profilesData } = await supabase
-      .from('profiles')
-      .select('id, full_name');
 
-    if (appointmentsData && profilesData) {
-      // Merge profiles data
+    if (appointmentsData) {
+      // Map to ensure profiles data is properly structured
       const enrichedAppointments = appointmentsData.map(apt => ({
         ...apt,
-        profiles: profilesData.find(p => p.id === apt.customer_id) || { full_name: 'Unknown' }
+        profiles: apt.profiles || { full_name: 'Unknown' }
       }));
       
       setAppointments(enrichedAppointments as any);

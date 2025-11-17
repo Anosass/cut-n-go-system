@@ -55,9 +55,9 @@ export const AvailabilityCalendar = ({ barberId }: { barberId?: string }) => {
 
     let query = supabase
       .from('appointments')
-      .select('appointment_time')
+      .select('appointment_time, services(duration_minutes)')
       .eq('appointment_date', dateStr)
-      .neq('status', 'cancelled');
+      .in('status', ['pending', 'confirmed']);
 
     if (barberId) {
       query = query.eq('barber_id', barberId);
@@ -65,13 +65,26 @@ export const AvailabilityCalendar = ({ barberId }: { barberId?: string }) => {
 
     const { data: bookedAppointments } = await query;
 
-    const bookedTimes = new Set(
-      bookedAppointments?.map((apt) => apt.appointment_time) || []
-    );
+    // Calculate all occupied time slots based on service durations
+    const occupiedTimes = new Set<string>();
+    
+    bookedAppointments?.forEach((apt) => {
+      const duration = apt.services?.duration_minutes || 30;
+      const slotsNeeded = Math.ceil(duration / 30);
+      const startIdx = allTimeSlots.indexOf(apt.appointment_time);
+      
+      if (startIdx !== -1) {
+        for (let i = 0; i < slotsNeeded; i++) {
+          if (startIdx + i < allTimeSlots.length) {
+            occupiedTimes.add(allTimeSlots[startIdx + i]);
+          }
+        }
+      }
+    });
 
     const slots: TimeSlot[] = allTimeSlots.map((time) => ({
       time,
-      isAvailable: !bookedTimes.has(time)
+      isAvailable: !occupiedTimes.has(time)
     }));
 
     setTimeSlots(slots);
