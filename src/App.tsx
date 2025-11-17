@@ -11,6 +11,7 @@ import Booking from "./pages/Booking";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import Barber from "./pages/Barber";
+import BarberProfileSetup from "./pages/BarberProfileSetup";
 import FaceShapeQuiz from "./pages/FaceShapeQuiz";
 import BarberProfiles from "./pages/BarberProfiles";
 import NotFound from "./pages/NotFound";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/barber" element={<Barber />} />
+          <Route path="/barber-profile-setup" element={<BarberProfileSetup />} />
           <Route path="/face-shape-quiz" element={<FaceShapeQuiz />} />
           <Route path="/barbers" element={<BarberProfiles />} />
           <Route path="*" element={<NotFound />} />
