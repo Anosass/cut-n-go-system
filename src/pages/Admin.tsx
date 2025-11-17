@@ -8,6 +8,7 @@ import { AdminWaitingListSummary } from "@/components/AdminWaitingListSummary";
 import { AdminAnalytics } from "@/components/AdminAnalytics";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Calendar, 
   Users, 
@@ -48,10 +49,59 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     checkAdmin();
   }, []);
+
+  // Real-time subscription for appointments
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const channel = supabase
+      .channel('appointments-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'appointments'
+        },
+        (payload) => {
+          toast({
+            title: "New Appointment",
+            description: "A new appointment has been created",
+          });
+          fetchDashboardData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'appointments'
+        },
+        (payload) => {
+          const oldStatus = (payload.old as any)?.status;
+          const newStatus = (payload.new as any)?.status;
+          
+          if (oldStatus !== newStatus) {
+            toast({
+              title: "Appointment Status Changed",
+              description: `Status updated from ${oldStatus} to ${newStatus}`,
+            });
+            fetchDashboardData();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin, toast]);
 
   const checkAdmin = async () => {
     const { data: { session } } = await supabase.auth.getSession();
