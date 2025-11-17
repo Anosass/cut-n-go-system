@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Navbar } from "@/components/Navbar";
 import { AdminWaitingListSummary } from "@/components/AdminWaitingListSummary";
+import { AdminAnalytics } from "@/components/AdminAnalytics";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -14,7 +15,8 @@ import {
   DollarSign, 
   TrendingUp,
   User as UserIcon,
-  Clock
+  Clock,
+  BarChart3
 } from "lucide-react";
 
 interface Stats {
@@ -165,52 +167,68 @@ const Admin = () => {
             Admin Dashboard
           </h1>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Appointments</p>
-                  <p className="text-3xl font-bold mt-2">{stats.totalAppointments}</p>
-                </div>
-                <Calendar className="h-12 w-12 text-primary opacity-50" />
+          <Tabs defaultValue="overview" className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="analytics">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Analytics
+              </TabsTrigger>
+              <TabsTrigger value="appointments">Appointments</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-6">
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Appointments</p>
+                      <p className="text-3xl font-bold mt-2">{stats.totalAppointments}</p>
+                    </div>
+                    <Calendar className="h-12 w-12 text-primary opacity-50" />
+                  </div>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Today's Appointments</p>
+                      <p className="text-3xl font-bold mt-2">{stats.todayAppointments}</p>
+                    </div>
+                    <Clock className="h-12 w-12 text-primary opacity-50" />
+                  </div>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Customers</p>
+                      <p className="text-3xl font-bold mt-2">{stats.totalCustomers}</p>
+                    </div>
+                    <Users className="h-12 w-12 text-primary opacity-50" />
+                  </div>
+                </Card>
+
+                <Card className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Revenue</p>
+                      <p className="text-3xl font-bold mt-2">${stats.totalRevenue}</p>
+                    </div>
+                    <DollarSign className="h-12 w-12 text-primary opacity-50" />
+                  </div>
+                </Card>
+
+                <AdminWaitingListSummary />
               </div>
-            </Card>
+            </TabsContent>
 
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Today's Appointments</p>
-                  <p className="text-3xl font-bold mt-2">{stats.todayAppointments}</p>
-                </div>
-                <Clock className="h-12 w-12 text-primary opacity-50" />
-              </div>
-            </Card>
+            <TabsContent value="analytics">
+              <AdminAnalytics appointments={appointments} />
+            </TabsContent>
 
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Customers</p>
-                  <p className="text-3xl font-bold mt-2">{stats.totalCustomers}</p>
-                </div>
-                <Users className="h-12 w-12 text-primary opacity-50" />
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Revenue</p>
-                  <p className="text-3xl font-bold mt-2">${stats.totalRevenue}</p>
-                </div>
-                <DollarSign className="h-12 w-12 text-primary opacity-50" />
-              </div>
-            </Card>
-
-            <AdminWaitingListSummary />
-          </div>
-
-          {/* Appointments Management */}
+            <TabsContent value="appointments">
           <Card className="p-6">
             <h2 className="text-2xl font-bold mb-6">All Appointments</h2>
             
@@ -278,7 +296,9 @@ const Admin = () => {
                 ))}
               </div>
             )}
-          </Card>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
