@@ -68,7 +68,7 @@ const Booking = () => {
     } else if (selectedDate) {
       fetchBookedSlotsForDate();
     }
-  }, [selectedDate, selectedTime, barbers]);
+  }, [selectedDate, selectedTime, selectedService, barbers]);
 
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -111,9 +111,9 @@ const Booking = () => {
     const appointmentDate = format(selectedDate, 'yyyy-MM-dd');
     const { data: appointments } = await supabase
       .from('appointments')
-      .select('appointment_time, barber_id')
+      .select('appointment_time, barber_id, services(duration_minutes)')
       .eq('appointment_date', appointmentDate)
-      .neq('status', 'cancelled');
+      .in('status', ['pending', 'confirmed']);
 
     if (!appointments) return;
 
@@ -121,18 +121,52 @@ const Booking = () => {
     const booked = new Set<string>();
     const fullyBooked = new Set<string>();
 
-    // Count bookings per time slot
-    const bookingCounts = new Map<string, number>();
+    // Helper to get overlapping time slots based on service duration
+    const getOccupiedSlots = (startTime: string, durationMinutes: number) => {
+      const slots: string[] = [];
+      const startIdx = timeSlots.indexOf(startTime);
+      if (startIdx === -1) return slots;
+      
+      const slotsNeeded = Math.ceil(durationMinutes / 30);
+      for (let i = 0; i < slotsNeeded; i++) {
+        if (startIdx + i < timeSlots.length) {
+          slots.push(timeSlots[startIdx + i]);
+        }
+      }
+      return slots;
+    };
+
+    // Track occupied slots per barber
+    const barberOccupiedSlots = new Map<string, Set<string>>();
+    
     appointments.forEach(apt => {
-      booked.add(apt.appointment_time);
-      const count = bookingCounts.get(apt.appointment_time) || 0;
-      bookingCounts.set(apt.appointment_time, count + 1);
+      const duration = apt.services?.duration_minutes || 30;
+      const occupiedSlots = getOccupiedSlots(apt.appointment_time, duration);
+      
+      occupiedSlots.forEach(slot => {
+        booked.add(slot);
+        
+        // Track per barber
+        if (apt.barber_id) {
+          if (!barberOccupiedSlots.has(apt.barber_id)) {
+            barberOccupiedSlots.set(apt.barber_id, new Set());
+          }
+          barberOccupiedSlots.get(apt.barber_id)?.add(slot);
+        }
+      });
     });
 
-    // Mark slots as fully booked if all barbers are taken
-    bookingCounts.forEach((count, time) => {
-      if (count >= barbers.length) {
-        fullyBooked.add(time);
+    // Mark slots as fully booked if all barbers are occupied
+    timeSlots.forEach(slot => {
+      let occupiedBarberCount = 0;
+      barberOccupiedSlots.forEach(occupiedSlots => {
+        if (occupiedSlots.has(slot)) {
+          occupiedBarberCount++;
+        }
+      });
+      
+      if (occupiedBarberCount >= barbers.length) {
+        fullyBooked.add(slot);
       }
     });
 
@@ -141,7 +175,7 @@ const Booking = () => {
   };
 
   const fetchAvailableBarbers = async () => {
-    if (!selectedDate || !selectedTime) {
+    if (!selectedDate || !selectedTime || !selectedService) {
       setAvailableBarbers(barbers);
       return;
     }
@@ -149,23 +183,55 @@ const Booking = () => {
     const appointmentDate = format(selectedDate, 'yyyy-MM-dd');
     const { data: bookedAppointments } = await supabase
       .from('appointments')
-      .select('barber_id')
+      .select('barber_id, appointment_time, services(duration_minutes)')
       .eq('appointment_date', appointmentDate)
-      .eq('appointment_time', selectedTime)
-      .neq('status', 'cancelled');
+      .in('status', ['pending', 'confirmed']);
 
     if (!bookedAppointments) {
       setAvailableBarbers(barbers);
       return;
     }
 
-    const bookedBarberIds = new Set(
-      bookedAppointments
-        .filter(apt => apt.barber_id)
-        .map(apt => apt.barber_id)
-    );
+    // Get selected service duration
+    const selectedServiceData = services.find(s => s.id === selectedService);
+    const requestedDuration = selectedServiceData?.duration_minutes || 30;
+    const slotsNeeded = Math.ceil(requestedDuration / 30);
+    const selectedTimeIdx = timeSlots.indexOf(selectedTime);
+    
+    // Calculate which time slots we need for this booking
+    const neededSlots: string[] = [];
+    for (let i = 0; i < slotsNeeded; i++) {
+      if (selectedTimeIdx + i < timeSlots.length) {
+        neededSlots.push(timeSlots[selectedTimeIdx + i]);
+      }
+    }
 
-    const available = barbers.filter(barber => !bookedBarberIds.has(barber.id));
+    // Check each barber for conflicts
+    const unavailableBarberIds = new Set<string>();
+    
+    bookedAppointments.forEach(apt => {
+      if (!apt.barber_id) return;
+      
+      const bookedDuration = apt.services?.duration_minutes || 30;
+      const bookedSlotsNeeded = Math.ceil(bookedDuration / 30);
+      const bookedTimeIdx = timeSlots.indexOf(apt.appointment_time);
+      
+      // Calculate occupied slots for this appointment
+      const occupiedSlots: string[] = [];
+      for (let i = 0; i < bookedSlotsNeeded; i++) {
+        if (bookedTimeIdx + i < timeSlots.length) {
+          occupiedSlots.push(timeSlots[bookedTimeIdx + i]);
+        }
+      }
+      
+      // Check if any needed slot overlaps with occupied slots
+      const hasConflict = neededSlots.some(slot => occupiedSlots.includes(slot));
+      if (hasConflict) {
+        unavailableBarberIds.add(apt.barber_id);
+      }
+    });
+
+    const available = barbers.filter(barber => !unavailableBarberIds.has(barber.id));
     setAvailableBarbers(available);
   };
 
@@ -181,43 +247,94 @@ const Booking = () => {
 
     setLoading(true);
 
+    // Get service duration
+    const selectedServiceData = services.find(s => s.id === selectedService);
+    const requestedDuration = selectedServiceData?.duration_minutes || 30;
+    const slotsNeeded = Math.ceil(requestedDuration / 30);
+    const selectedTimeIdx = timeSlots.indexOf(selectedTime);
+    
+    // Calculate needed time slots
+    const neededSlots: string[] = [];
+    for (let i = 0; i < slotsNeeded; i++) {
+      if (selectedTimeIdx + i < timeSlots.length) {
+        neededSlots.push(timeSlots[selectedTimeIdx + i]);
+      }
+    }
+
     // Check for time conflicts
     const appointmentDate = format(selectedDate, 'yyyy-MM-dd');
     const barberId = selectedBarber === 'any' ? null : selectedBarber;
 
-    // Query for existing appointments at the same time
-    const conflictQuery = supabase
+    // Query for existing appointments
+    const { data: existingAppointments } = await supabase
       .from('appointments')
-      .select('id, barber_id')
+      .select('id, barber_id, appointment_time, services(duration_minutes)')
       .eq('appointment_date', appointmentDate)
-      .eq('appointment_time', selectedTime)
-      .neq('status', 'cancelled');
+      .in('status', ['pending', 'confirmed']);
 
-    const { data: conflicts } = await conflictQuery;
-
-    // If a specific barber is selected, check if that barber has a conflict
-    if (barberId && conflicts && conflicts.length > 0) {
-      const barberConflict = conflicts.find(apt => apt.barber_id === barberId);
-      if (barberConflict) {
-        setLoading(false);
-        toast({
-          title: "Time slot unavailable",
-          description: "This barber is already booked at this time. Please choose a different time or barber.",
-          variant: "destructive",
+    if (existingAppointments) {
+      // If a specific barber is selected
+      if (barberId) {
+        const barberAppointments = existingAppointments.filter(apt => apt.barber_id === barberId);
+        
+        for (const apt of barberAppointments) {
+          const bookedDuration = apt.services?.duration_minutes || 30;
+          const bookedSlotsNeeded = Math.ceil(bookedDuration / 30);
+          const bookedTimeIdx = timeSlots.indexOf(apt.appointment_time);
+          
+          const occupiedSlots: string[] = [];
+          for (let i = 0; i < bookedSlotsNeeded; i++) {
+            if (bookedTimeIdx + i < timeSlots.length) {
+              occupiedSlots.push(timeSlots[bookedTimeIdx + i]);
+            }
+          }
+          
+          // Check for overlap
+          const hasConflict = neededSlots.some(slot => occupiedSlots.includes(slot));
+          if (hasConflict) {
+            setLoading(false);
+            toast({
+              title: "Time slot unavailable",
+              description: "This barber is already booked during this time. Please choose a different time or barber.",
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+      } else {
+        // If no specific barber, check if all barbers are unavailable
+        const unavailableBarbers = new Set<string>();
+        
+        existingAppointments.forEach(apt => {
+          if (!apt.barber_id) return;
+          
+          const bookedDuration = apt.services?.duration_minutes || 30;
+          const bookedSlotsNeeded = Math.ceil(bookedDuration / 30);
+          const bookedTimeIdx = timeSlots.indexOf(apt.appointment_time);
+          
+          const occupiedSlots: string[] = [];
+          for (let i = 0; i < bookedSlotsNeeded; i++) {
+            if (bookedTimeIdx + i < timeSlots.length) {
+              occupiedSlots.push(timeSlots[bookedTimeIdx + i]);
+            }
+          }
+          
+          const hasConflict = neededSlots.some(slot => occupiedSlots.includes(slot));
+          if (hasConflict) {
+            unavailableBarbers.add(apt.barber_id);
+          }
         });
-        return;
+        
+        if (unavailableBarbers.size >= barbers.length) {
+          setLoading(false);
+          toast({
+            title: "Time slot unavailable",
+            description: "All barbers are booked during this time. Please choose a different time.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
-    }
-    
-    // If no specific barber selected, check if ALL barbers are booked
-    if (!barberId && conflicts && conflicts.length >= barbers.length) {
-      setLoading(false);
-      toast({
-        title: "Time slot unavailable",
-        description: "All barbers are booked at this time. Please choose a different time.",
-        variant: "destructive",
-      });
-      return;
     }
 
     // Proceed with booking if no conflicts
