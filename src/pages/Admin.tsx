@@ -126,7 +126,7 @@ const Admin = () => {
   };
 
   const fetchDashboardData = async () => {
-    // Fetch appointments with customer details
+    // Fetch appointments with service and barber details
     const { data: appointmentsData, error } = await supabase
       .from('appointments')
       .select(`
@@ -138,33 +138,59 @@ const Admin = () => {
 
     if (error) {
       console.error('Error fetching admin appointments:', error.message);
+      setLoading(false);
+      return;
     }
 
+    if (appointmentsData && appointmentsData.length > 0) {
+      // Fetch customer profiles for these appointments
+      const customerIds = Array.from(
+        new Set(appointmentsData.map((apt: any) => apt.customer_id))
+      );
 
-    if (appointmentsData) {
-      // Map to ensure profiles data is properly structured even if not joined
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', customerIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles for admin view:', profilesError.message);
+      }
+
+      const profilesMap = new Map<string, { full_name: string }>();
+      (profilesData || []).forEach((profile: any) => {
+        profilesMap.set(profile.id, { full_name: profile.full_name });
+      });
+
       const enrichedAppointments = appointmentsData.map((apt: any) => ({
         ...apt,
-        profiles: (apt as any).profiles || { full_name: 'Unknown' },
+        profiles: profilesMap.get(apt.customer_id) || { full_name: 'Unknown' },
       }));
 
-      
       setAppointments(enrichedAppointments as any);
-      
+
       const today = new Date().toISOString().split('T')[0];
       const todayCount = appointmentsData.filter(
-        apt => apt.appointment_date === today && apt.status !== 'cancelled'
+        (apt: any) => apt.appointment_date === today && apt.status !== 'cancelled'
       ).length;
 
       const revenue = appointmentsData
-        .filter(apt => apt.status === 'completed')
-        .reduce((sum, apt) => sum + Number(apt.services.price), 0);
+        .filter((apt: any) => apt.status === 'completed')
+        .reduce((sum: number, apt: any) => sum + Number(apt.services.price), 0);
 
       setStats({
         totalAppointments: appointmentsData.length,
         todayAppointments: todayCount,
-        totalCustomers: new Set(appointmentsData.map(apt => apt.customer_id)).size,
-        totalRevenue: revenue
+        totalCustomers: new Set(appointmentsData.map((apt: any) => apt.customer_id)).size,
+        totalRevenue: revenue,
+      });
+    } else {
+      setAppointments([]);
+      setStats({
+        totalAppointments: 0,
+        todayAppointments: 0,
+        totalCustomers: 0,
+        totalRevenue: 0,
       });
     }
 
