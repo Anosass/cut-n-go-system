@@ -7,25 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Scissors, CheckCircle2, ArrowRight, RotateCcw } from "lucide-react";
 import { Link } from "react-router-dom";
 
-interface Question {
-  id: string;
-  question: string;
-  options: {
-    value: string;
-    label: string;
-    points: Record<string, number>;
-  }[];
-}
-
-interface Result {
-  shape: string;
-  description: string;
-  recommendations: string[];
-  idealCuts: string[];
-  avoid: string[];
-}
-
-const questions: Question[] = [
+const questions = [
   {
     id: "jawline",
     question: "How would you describe your jawline?",
@@ -68,7 +50,7 @@ const questions: Question[] = [
   }
 ];
 
-const results: Record<string, Result> = {
+const results = {
   oval: {
     shape: "Oval Face",
     description: "You have the most versatile face shape! Your balanced proportions allow you to pull off almost any hairstyle.",
@@ -171,8 +153,8 @@ const FaceShapeQuiz = () => {
     }
   };
 
-  const calculateResult = (): Result => {
-    const scores: Record<string, number> = {
+  const calculateResult = () => {
+    const scores = {
       oval: 0,
       round: 0,
       square: 0,
