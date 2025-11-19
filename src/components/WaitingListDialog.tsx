@@ -10,27 +10,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { CalendarIcon, Clock, Bell } from "lucide-react";
 
-interface Service {
-  id: string;
-  name: string;
-}
-
-interface Barber {
-  id: string;
-  name: string;
-}
-
-interface WaitingListDialogProps {
-  services: Service[];
-  barbers: Barber[];
-}
-
-export const WaitingListDialog = ({ services, barbers }: WaitingListDialogProps) => {
+export const WaitingListDialog = ({ services, barbers }) => {
   const [open, setOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<string>("");
-  const [selectedBarber, setSelectedBarber] = useState<string>("any");
-  const [selectedDate, setSelectedDate] = useState<Date>();
-  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [selectedService, setSelectedService] = useState("");
+  const [selectedBarber, setSelectedBarber] = useState("any");
+  const [selectedDate, setSelectedDate] = useState(undefined);
+  const [selectedTime, setSelectedTime] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -164,7 +149,7 @@ export const WaitingListDialog = ({ services, barbers }: WaitingListDialogProps)
                 <Calendar
                   mode="single"
                   selected={selectedDate}
-                  onSelect={setSelectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
                   disabled={(date) => date < new Date() || date.getDay() === 0}
                 />
               </PopoverContent>

@@ -2,23 +2,9 @@ import { Card } from "@/components/ui/card";
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrendingUp, DollarSign, Calendar, Star } from "lucide-react";
 
-interface Appointment {
-  id: string;
-  appointment_date: string;
-  appointment_time: string;
-  status: string;
-  barber_id: string | null;
-  services: { name: string; price: number };
-  barbers: { name: string } | null;
-}
-
-interface AdminAnalyticsProps {
-  appointments: Appointment[];
-}
-
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', 'hsl(var(--chart-1))', 'hsl(var(--chart-2))'];
 
-export const AdminAnalytics = ({ appointments }: AdminAnalyticsProps) => {
+export const AdminAnalytics = ({ appointments }) => {
   // Calculate booking trends over last 7 days
   const getLast7Days = () => {
     const days = [];
@@ -57,10 +43,12 @@ export const AdminAnalytics = ({ appointments }: AdminAnalyticsProps) => {
         acc[serviceName].revenue += Number(apt.services.price);
       }
       return acc;
-    }, {} as Record<string, { name: string; count: number; revenue: number }>);
+    }, {});
 
-  const popularServices = Object.values(serviceStats)
-    .sort((a, b) => b.count - a.count)
+  const popularServicesArray = Object.values(serviceStats);
+  const popularServices = popularServicesArray
+    .filter(item => item && typeof item === 'object')
+    .sort((a, b) => ((b).count || 0) - ((a).count || 0))
     .slice(0, 6);
 
   // Barber performance
@@ -77,14 +65,16 @@ export const AdminAnalytics = ({ appointments }: AdminAnalyticsProps) => {
         acc[barberName].revenue += Number(apt.services.price);
       }
       return acc;
-    }, {} as Record<string, { name: string; appointments: number; revenue: number; completed: number }>);
+    }, {});
 
-  const barberPerformance = Object.values(barberStats)
-    .map(barber => ({
-      ...barber,
-      completionRate: barber.appointments > 0 ? Math.round((barber.completed / barber.appointments) * 100) : 0
-    }))
-    .sort((a, b) => b.revenue - a.revenue);
+  const barberStatsArray = Object.values(barberStats);
+  const barberPerformance = barberStatsArray
+    .filter(item => item && typeof item === 'object')
+    .map(barber => {
+    const b = barber;
+    const completionRate = ((b).appointments || 0) > 0 ? Math.round((((b).completed || 0) / ((b).appointments || 0)) * 100) : 0;
+    return Object.assign({}, b, { completionRate });
+  }).sort((a, b) => ((b).revenue || 0) - ((a).revenue || 0));
 
   // Status distribution
   const statusDistribution = appointments.reduce((acc, apt) => {
@@ -93,7 +83,7 @@ export const AdminAnalytics = ({ appointments }: AdminAnalyticsProps) => {
     }
     acc[apt.status]++;
     return acc;
-  }, {} as Record<string, number>);
+  }, {});
 
   const statusData = Object.entries(statusDistribution).map(([name, value]) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),
