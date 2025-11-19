@@ -20,32 +20,14 @@ import {
   BarChart3
 } from "lucide-react";
 
-interface Stats {
-  totalAppointments: number;
-  todayAppointments: number;
-  totalCustomers: number;
-  totalRevenue: number;
-}
-
-interface Appointment {
-  id: string;
-  appointment_date: string;
-  appointment_time: string;
-  status: string;
-  barber_id: string | null;
-  profiles: { full_name: string };
-  services: { name: string; price: number };
-  barbers: { name: string } | null;
-}
-
 const Admin = () => {
-  const [stats, setStats] = useState<Stats>({
+  const [stats, setStats] = useState({
     totalAppointments: 0,
     todayAppointments: 0,
     totalCustomers: 0,
     totalRevenue: 0
   });
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
@@ -84,8 +66,8 @@ const Admin = () => {
           table: 'appointments'
         },
         (payload) => {
-          const oldStatus = (payload.old as any)?.status;
-          const newStatus = (payload.new as any)?.status;
+          const oldStatus = payload.old?.status;
+          const newStatus = payload.new?.status;
           
           if (oldStatus !== newStatus) {
             toast({
@@ -157,31 +139,31 @@ const Admin = () => {
         console.error('Error fetching profiles for admin view:', profilesError.message);
       }
 
-      const profilesMap = new Map<string, { full_name: string }>();
-      (profilesData || []).forEach((profile: any) => {
+      const profilesMap = new Map();
+      (profilesData || []).forEach((profile) => {
         profilesMap.set(profile.id, { full_name: profile.full_name });
       });
 
-      const enrichedAppointments = appointmentsData.map((apt: any) => ({
+      const enrichedAppointments = appointmentsData.map((apt) => ({
         ...apt,
         profiles: profilesMap.get(apt.customer_id) || { full_name: 'Unknown' },
       }));
 
-      setAppointments(enrichedAppointments as any);
+      setAppointments(enrichedAppointments);
 
       const today = new Date().toISOString().split('T')[0];
       const todayCount = appointmentsData.filter(
-        (apt: any) => apt.appointment_date === today && apt.status !== 'cancelled'
+        (apt) => apt.appointment_date === today && apt.status !== 'cancelled'
       ).length;
 
       const revenue = appointmentsData
-        .filter((apt: any) => apt.status === 'completed')
-        .reduce((sum: number, apt: any) => sum + Number(apt.services.price), 0);
+        .filter((apt) => apt.status === 'completed')
+        .reduce((sum, apt) => sum + Number(apt.services.price), 0);
 
       setStats({
         totalAppointments: appointmentsData.length,
         todayAppointments: todayCount,
-        totalCustomers: new Set(appointmentsData.map((apt: any) => apt.customer_id)).size,
+        totalCustomers: new Set(appointmentsData.map((apt) => apt.customer_id)).size,
         totalRevenue: revenue,
       });
     } else {
@@ -197,7 +179,7 @@ const Admin = () => {
     setLoading(false);
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       pending: "secondary",
       confirmed: "default",

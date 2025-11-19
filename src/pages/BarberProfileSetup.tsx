@@ -11,20 +11,16 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
-interface WorkingHours {
-  [key: string]: { start: string; end: string; enabled: boolean };
-}
-
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
 const BarberProfileSetup = () => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [barberId, setBarberId] = useState<string | null>(null);
+  const [barberId, setBarberId] = useState(null);
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
-  const [workingHours, setWorkingHours] = useState<WorkingHours>({
+  const [workingHours, setWorkingHours] = useState({
     monday: { start: "09:00", end: "17:00", enabled: false },
     tuesday: { start: "09:00", end: "17:00", enabled: true },
     wednesday: { start: "09:00", end: "17:00", enabled: true },
@@ -35,7 +31,7 @@ const BarberProfileSetup = () => {
   });
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [userId, setUserId] = useState<string>("");
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     checkBarberRole();
@@ -80,12 +76,12 @@ const BarberProfileSetup = () => {
       setBio(barber.bio || "");
       setAvatarUrl(barber.avatar_url || "");
       if (barber.working_hours) {
-        setWorkingHours(barber.working_hours as WorkingHours);
+        setWorkingHours(JSON.parse(JSON.stringify(barber.working_hours)));
       }
     }
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -106,7 +102,7 @@ const BarberProfileSetup = () => {
 
       setAvatarUrl(publicUrl);
       toast({ title: "Avatar uploaded successfully" });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Upload failed",
         description: error.message,
@@ -117,7 +113,7 @@ const BarberProfileSetup = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
@@ -164,7 +160,7 @@ const BarberProfileSetup = () => {
     }
   };
 
-  const updateWorkingHours = (day: string, field: 'start' | 'end' | 'enabled', value: string | boolean) => {
+  const updateWorkingHours = (day, field, value) => {
     setWorkingHours(prev => ({
       ...prev,
       [day]: {

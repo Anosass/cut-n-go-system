@@ -10,39 +10,8 @@ import { Star, Scissors, Calendar, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 
-interface Barber {
-  id: string;
-  name: string;
-  bio: string;
-  avatar_url: string | null;
-  working_hours: any;
-}
-
-interface GalleryImage {
-  id: string;
-  image_url: string;
-  title: string | null;
-  description: string | null;
-}
-
-interface Review {
-  id: string;
-  rating: number;
-  comment: string | null;
-  created_at: string;
-  customer_id: string;
-}
-
-interface BarberWithData extends Barber {
-  gallery: GalleryImage[];
-  reviews: Review[];
-  averageRating: number;
-  totalReviews: number;
-  specialties: string[];
-}
-
 const BarberProfiles = () => {
-  const [barbers, setBarbers] = useState<BarberWithData[]>([]);
+  const [barbers, setBarbers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -106,7 +75,7 @@ const BarberProfiles = () => {
     }
   };
 
-  const extractSpecialties = (bio: string | null): string[] => {
+  const extractSpecialties = (bio) => {
     if (!bio) return ['Haircuts', 'Beard Styling'];
     
     const specialtyKeywords = [
@@ -120,7 +89,7 @@ const BarberProfiles = () => {
     return found.length > 0 ? found : ['Haircuts', 'Beard Styling'];
   };
 
-  const renderStars = (rating: number) => {
+  const renderStars = (rating) => {
     return (
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
