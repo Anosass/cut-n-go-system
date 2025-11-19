@@ -48,7 +48,7 @@ export const AdminAnalytics = ({ appointments }) => {
   const popularServicesArray = Object.values(serviceStats);
   const popularServices = popularServicesArray
     .filter(item => item && typeof item === 'object')
-    .sort((a, b) => ((b).count || 0) - ((a).count || 0))
+    .sort((a, b) => ((b)['count'] || 0) - ((a)['count'] || 0))
     .slice(0, 6);
 
   // Barber performance
@@ -72,9 +72,9 @@ export const AdminAnalytics = ({ appointments }) => {
     .filter(item => item && typeof item === 'object')
     .map(barber => {
     const b = barber;
-    const completionRate = ((b).appointments || 0) > 0 ? Math.round((((b).completed || 0) / ((b).appointments || 0)) * 100) : 0;
+    const completionRate = ((b)['appointments'] || 0) > 0 ? Math.round((((b)['completed'] || 0) / ((b)['appointments'] || 0)) * 100) : 0;
     return Object.assign({}, b, { completionRate });
-  }).sort((a, b) => ((b).revenue || 0) - ((a).revenue || 0));
+  }).sort((a, b) => ((b)['revenue'] || 0) - ((a)['revenue'] || 0));
 
   // Status distribution
   const statusDistribution = appointments.reduce((acc, apt) => {
@@ -235,10 +235,10 @@ export const AdminAnalytics = ({ appointments }) => {
             </thead>
             <tbody>
               {barberPerformance.map((barber) => (
-                <tr key={barber.name} className="border-b border-border hover:bg-muted/50">
-                  <td className="p-4 font-medium">{barber.name}</td>
-                  <td className="text-center p-4">{barber.appointments}</td>
-                  <td className="text-center p-4">{barber.completed}</td>
+                <tr key={barber['name']} className="border-b border-border hover:bg-muted/50">
+                  <td className="p-4 font-medium">{barber['name']}</td>
+                  <td className="text-center p-4">{barber['appointments']}</td>
+                  <td className="text-center p-4">{barber['completed']}</td>
                   <td className="text-center p-4">
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                       barber.completionRate >= 80 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
@@ -248,7 +248,7 @@ export const AdminAnalytics = ({ appointments }) => {
                       {barber.completionRate}%
                     </span>
                   </td>
-                  <td className="text-right p-4 font-semibold">${barber.revenue.toFixed(2)}</td>
+                  <td className="text-right p-4 font-semibold">${barber['revenue'].toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
