@@ -11,18 +11,9 @@ import { BarberGallery } from "@/components/BarberGallery";
 import { AvailabilityCalendar } from "@/components/AvailabilityCalendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface Appointment {
-  id: string;
-  appointment_date: string;
-  appointment_time: string;
-  status: string;
-  profiles: { full_name: string };
-  services: { name: string };
-}
-
 const Barber = () => {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [barberId, setBarberId] = useState<string>("");
+  const [appointments, setAppointments] = useState([]);
+  const [barberId, setBarberId] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -83,11 +74,11 @@ const Barber = () => {
         ...apt,
         profiles: profilesData.find(p => p.id === apt.customer_id) || { full_name: 'Unknown' }
       }));
-      setAppointments(enriched as any);
+      setAppointments(enriched);
     }
   };
 
-  const updateStatus = async (id: string, status: string) => {
+  const updateStatus = async (id, status) => {
     const { error } = await supabase
       .from('appointments')
       .update({ status })

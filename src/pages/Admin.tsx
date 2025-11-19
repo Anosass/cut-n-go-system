@@ -127,7 +127,7 @@ const Admin = () => {
     if (appointmentsData && appointmentsData.length > 0) {
       // Fetch customer profiles for these appointments
       const customerIds = Array.from(
-        new Set(appointmentsData.map((apt: any) => apt.customer_id))
+        new Set(appointmentsData.map((apt) => apt.customer_id))
       );
 
       const { data: profilesData, error: profilesError } = await supabase

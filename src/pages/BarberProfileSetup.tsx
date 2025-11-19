@@ -149,7 +149,7 @@ const BarberProfileSetup = () => {
         toast({ title: "Profile created successfully" });
       }
       navigate("/barber");
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description: error.message,
