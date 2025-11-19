@@ -15,31 +15,19 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
-interface Service {
-  id: string;
-  name: string;
-  price: number;
-  duration_minutes: number;
-}
-
-interface Barber {
-  id: string;
-  name: string;
-}
-
 const Booking = () => {
-  const [services, setServices] = useState<Service[]>([]);
-  const [barbers, setBarbers] = useState<Barber[]>([]);
-  const [availableBarbers, setAvailableBarbers] = useState<Barber[]>([]);
-  const [selectedService, setSelectedService] = useState<string>("");
-  const [selectedBarber, setSelectedBarber] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<Date>();
-  const [selectedTime, setSelectedTime] = useState<string>("");
-  const [notes, setNotes] = useState<string>("");
+  const [services, setServices] = useState([]);
+  const [barbers, setBarbers] = useState([]);
+  const [availableBarbers, setAvailableBarbers] = useState([]);
+  const [selectedService, setSelectedService] = useState("");
+  const [selectedBarber, setSelectedBarber] = useState("");
+  const [selectedDate, setSelectedDate] = useState();
+  const [selectedTime, setSelectedTime] = useState("");
+  const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [bookedSlots, setBookedSlots] = useState<Set<string>>(new Set());
-  const [fullyBookedSlots, setFullyBookedSlots] = useState<Set<string>>(new Set());
+  const [user, setUser] = useState(null);
+  const [bookedSlots, setBookedSlots] = useState(new Set());
+  const [fullyBookedSlots, setFullyBookedSlots] = useState(new Set());
   
   const navigate = useNavigate();
   const location = useLocation();

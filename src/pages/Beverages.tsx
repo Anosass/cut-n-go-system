@@ -11,16 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { BeverageCart } from "@/components/BeverageCart";
 
-interface Beverage {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  image_url?: string;
-}
-
-const getBeverageImage = (serviceName: string): string => {
+const getBeverageImage = (serviceName) => {
   const lowerName = serviceName.toLowerCase();
   
   if (lowerName.includes('juice')) return juice;
@@ -31,9 +22,9 @@ const getBeverageImage = (serviceName: string): string => {
 };
 
 const Beverages = () => {
-  const [beverages, setBeverages] = useState<Beverage[]>([]);
+  const [beverages, setBeverages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -61,7 +52,7 @@ const Beverages = () => {
     setLoading(false);
   };
 
-  const addToCart = async (beverage: Beverage) => {
+  const addToCart = async (beverage) => {
     if (!user) {
       toast({
         title: "Authentication required",

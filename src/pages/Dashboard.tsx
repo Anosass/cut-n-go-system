@@ -15,34 +15,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
-interface Appointment {
-  id: string;
-  appointment_date: string;
-  appointment_time: string;
-  status: string;
-  notes: string;
-  services: { name: string; price: number };
-  barbers: { name: string } | null;
-}
-
-interface Profile {
-  full_name: string;
-  phone: string;
-  address: string;
-}
-
-interface Barber {
-  id: string;
-  name: string;
-}
-
 const Dashboard = () => {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [barbers, setBarbers] = useState<Barber[]>([]);
-  const [selectedBarber, setSelectedBarber] = useState<string>("");
+  const [appointments, setAppointments] = useState([]);
+  const [profile, setProfile] = useState(null);
+  const [barbers, setBarbers] = useState([]);
+  const [selectedBarber, setSelectedBarber] = useState("");
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -62,7 +41,7 @@ const Dashboard = () => {
     fetchProfile(session.user.id);
   };
 
-  const fetchAppointments = async (userId: string) => {
+  const fetchAppointments = async (userId) => {
     const { data, error } = await supabase
       .from('appointments')
       .select(`
@@ -79,7 +58,7 @@ const Dashboard = () => {
     setLoading(false);
   };
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId) => {
     const { data } = await supabase
       .from('profiles')
       .select('*')
@@ -106,7 +85,7 @@ const Dashboard = () => {
     }
   };
 
-  const updateProfile = async (e: React.FormEvent) => {
+  const updateProfile = async (e) => {
     e.preventDefault();
     if (!user || !profile) return;
 
@@ -133,7 +112,7 @@ const Dashboard = () => {
     }
   };
 
-  const cancelAppointment = async (appointmentId: string) => {
+  const cancelAppointment = async (appointmentId) => {
     const { error } = await supabase
       .from('appointments')
       .update({ status: 'cancelled' })
