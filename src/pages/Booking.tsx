@@ -21,7 +21,7 @@ const Booking = () => {
   const [availableBarbers, setAvailableBarbers] = useState([]);
   const [selectedService, setSelectedService] = useState("");
   const [selectedBarber, setSelectedBarber] = useState("");
-  const [selectedDate, setSelectedDate] = useState();
+  const [selectedDate, setSelectedDate] = useState(undefined);
   const [selectedTime, setSelectedTime] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
