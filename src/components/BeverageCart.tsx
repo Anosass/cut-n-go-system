@@ -14,18 +14,8 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 
-interface CartItem {
-  id: string;
-  service_id: string;
-  quantity: number;
-  services: {
-    name: string;
-    price: number;
-  };
-}
-
-export const BeverageCart = ({ userId }: { userId: string }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+export const BeverageCart = ({ userId }) => {
+  const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
@@ -70,11 +60,11 @@ export const BeverageCart = ({ userId }: { userId: string }) => {
       .eq('user_id', userId);
 
     if (data) {
-      setCartItems(data as CartItem[]);
+      setCartItems(data);
     }
   };
 
-  const updateQuantity = async (itemId: string, newQuantity: number) => {
+  const updateQuantity = async (itemId, newQuantity) => {
     if (newQuantity < 1) {
       await removeItem(itemId);
       return;
@@ -94,7 +84,7 @@ export const BeverageCart = ({ userId }: { userId: string }) => {
     }
   };
 
-  const removeItem = async (itemId: string) => {
+  const removeItem = async (itemId) => {
     const { error } = await supabase
       .from('cart_items')
       .delete()

@@ -4,15 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ImageIcon } from "lucide-react";
 
-interface GalleryImage {
-  id: string;
-  image_url: string;
-  title: string;
-  description: string;
-}
-
-export const BarberGallery = ({ barberId }: { barberId: string }) => {
-  const [images, setImages] = useState<GalleryImage[]>([]);
+export const BarberGallery = ({ barberId }) => {
+  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

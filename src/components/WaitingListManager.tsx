@@ -7,18 +7,8 @@ import { Trash2, Calendar, Clock, User as UserIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
-interface WaitingListEntry {
-  id: string;
-  appointment_date: string;
-  appointment_time: string;
-  status: string;
-  services: { name: string };
-  barbers: { name: string } | null;
-  notified_at: string | null;
-}
-
 export const WaitingListManager = () => {
-  const [entries, setEntries] = useState<WaitingListEntry[]>([]);
+  const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -50,7 +40,7 @@ export const WaitingListManager = () => {
     setLoading(false);
   };
 
-  const removeFromWaitingList = async (id: string) => {
+  const removeFromWaitingList = async (id) => {
     const { error } = await supabase
       .from('waiting_list')
       .delete()

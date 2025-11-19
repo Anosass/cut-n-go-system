@@ -6,14 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Clock, CheckCircle, XCircle } from "lucide-react";
 
-interface TimeSlot {
-  time: string;
-  isAvailable: boolean;
-}
-
-export const AvailabilityCalendar = ({ barberId }: { barberId?: string }) => {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+export const AvailabilityCalendar = ({ barberId }) => {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [timeSlots, setTimeSlots] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const allTimeSlots = [
@@ -66,7 +61,7 @@ export const AvailabilityCalendar = ({ barberId }: { barberId?: string }) => {
     const { data: bookedAppointments } = await query;
 
     // Calculate all occupied time slots based on service durations
-    const occupiedTimes = new Set<string>();
+    const occupiedTimes = new Set();
     
     bookedAppointments?.forEach((apt) => {
       const duration = apt.services?.duration_minutes || 30;
@@ -82,7 +77,7 @@ export const AvailabilityCalendar = ({ barberId }: { barberId?: string }) => {
       }
     });
 
-    const slots: TimeSlot[] = allTimeSlots.map((time) => ({
+    const slots = allTimeSlots.map((time) => ({
       time,
       isAvailable: !occupiedTimes.has(time)
     }));

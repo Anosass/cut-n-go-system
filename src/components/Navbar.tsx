@@ -3,11 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Calendar, LogOut, User, Users, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { User as SupabaseUser } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 
 export const Navbar = () => {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isBarber, setIsBarber] = useState(false);
   const navigate = useNavigate();
@@ -34,7 +33,7 @@ export const Navbar = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkUserRoles = async (userId: string) => {
+  const checkUserRoles = async (userId) => {
     const { data } = await supabase
       .from('user_roles')
       .select('role')

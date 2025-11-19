@@ -4,13 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Award, TrendingUp } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-interface LoyaltyData {
-  total_points: number;
-  lifetime_points: number;
-}
-
-export const LoyaltyPoints = ({ userId }: { userId: string }) => {
-  const [loyalty, setLoyalty] = useState<LoyaltyData | null>(null);
+export const LoyaltyPoints = ({ userId }) => {
+  const [loyalty, setLoyalty] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +24,7 @@ export const LoyaltyPoints = ({ userId }: { userId: string }) => {
         },
         (payload) => {
           if (payload.new) {
-            setLoyalty(payload.new as LoyaltyData);
+            setLoyalty(payload.new);
           }
         }
       )

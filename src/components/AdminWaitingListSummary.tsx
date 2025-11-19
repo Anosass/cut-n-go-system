@@ -4,13 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bell } from "lucide-react";
 
-interface WaitingListSummary {
-  total: number;
-  byDate: { date: string; count: number }[];
-}
-
 export const AdminWaitingListSummary = () => {
-  const [summary, setSummary] = useState<WaitingListSummary>({ total: 0, byDate: [] });
+  const [summary, setSummary] = useState({ total: 0, byDate: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,7 +29,7 @@ export const AdminWaitingListSummary = () => {
           acc.push({ date: entry.appointment_date, count: 1 });
         }
         return acc;
-      }, [] as { date: string; count: number }[]);
+      }, []);
 
       setSummary({
         total: data?.length || 0,
