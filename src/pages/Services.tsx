@@ -109,7 +109,7 @@ const getServiceImage = (serviceName: string, category: string): string => {
   return classicHaircut;
 };
 
-const getAdviceForService = (serviceName: string, category: string): ServiceAdvice | null => {
+const getAdviceForService = (serviceName, category) => {
   const lowerName = serviceName.toLowerCase();
   const lowerCategory = category.toLowerCase();
   
@@ -150,9 +150,9 @@ const getAdviceForService = (serviceName: string, category: string): ServiceAdvi
 };
 
 const Services = () => {
-  const [services, setServices] = useState<Service[]>([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [expandedServices, setExpandedServices] = useState<Set<string>>(new Set());
+  const [expandedServices, setExpandedServices] = useState(new Set());
 
   useEffect(() => {
     fetchServices();
@@ -184,7 +184,7 @@ const Services = () => {
     });
   };
 
-  const getAdviceForService = (serviceName: string, category: string): ServiceAdvice => {
+  const getAdviceForService = (serviceName, category) => {
     const categoryLower = category.toLowerCase();
     const nameLower = serviceName.toLowerCase();
 
@@ -248,7 +248,7 @@ const Services = () => {
     }
     acc[service.category].push(service);
     return acc;
-  }, {} as Record<string, Service[]>);
+  }, {});
 
   return (
     <div className="min-h-screen bg-background">
@@ -278,8 +278,9 @@ const Services = () => {
             </div>
           ) : (
             <div className="space-y-16">
-              {Object.entries(groupedServices).map(([category, categoryServices], index) => (
-                <div key={category} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              {Object.entries(groupedServices).map(([category, categoryServices]) => (
+                <div key={category} className="animate-fade-in">
+
                   <div className="flex items-center gap-3 mb-8">
                     <div className="h-1 w-12 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
                     <h2 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
@@ -289,7 +290,7 @@ const Services = () => {
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {categoryServices.map((service, serviceIndex) => {
+                    {Array.isArray(categoryServices) && categoryServices.map((service, serviceIndex) => {
                       const advice = getAdviceForService(service.name, service.category);
                       const isExpanded = expandedServices.has(service.id);
                       
@@ -297,7 +298,7 @@ const Services = () => {
                         <Card 
                           key={service.id} 
                           className="overflow-hidden hover:shadow-[var(--shadow-gold)] transition-all duration-500 group bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/30 hover:-translate-y-2"
-                          style={{ animationDelay: `${(index * 0.1) + (serviceIndex * 0.05)}s` }}
+                          style={{ animationDelay: `${serviceIndex * 0.05}s` }}
                         >
                           <div className="relative h-56 overflow-hidden">
                             <img 
