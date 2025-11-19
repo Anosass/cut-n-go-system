@@ -21,23 +21,7 @@ import juice from "@/assets/service-juice.jpg";
 import tea from "@/assets/service-tea.jpg";
 import coffee from "@/assets/service-coffee.jpg";
 
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  duration_minutes: number;
-  category: string;
-  image_url?: string;
-}
-
-interface ServiceAdvice {
-  styling: string[];
-  faceShapes: string[];
-  maintenance: string[];
-}
-
-const serviceAdvice: Record<string, Record<string, ServiceAdvice>> = {
+const serviceAdvice = {
   haircuts: {
     classic: {
       styling: ["Apply light pomade for a polished look", "Use a comb for precise styling", "Blow dry for added volume"],
@@ -231,7 +215,7 @@ const Services = () => {
     return serviceAdvice.default.general;
   };
 
-  const getServiceImage = (serviceName: string, category: string): string => {
+  const getServiceImage = (serviceName, category) => {
     const nameLower = serviceName.toLowerCase();
     const categoryLower = category.toLowerCase();
 
