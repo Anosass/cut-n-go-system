@@ -127,22 +127,27 @@ const Admin = () => {
 
   const fetchDashboardData = async () => {
     // Fetch appointments with customer details
-    const { data: appointmentsData } = await supabase
+    const { data: appointmentsData, error } = await supabase
       .from('appointments')
       .select(`
         *,
         services (name, price),
-        barbers (name),
-        profiles!appointments_customer_id_fkey (full_name)
+        barbers (name)
       `)
       .order('appointment_date', { ascending: false });
 
+    if (error) {
+      console.error('Error fetching admin appointments:', error.message);
+    }
+
+
     if (appointmentsData) {
-      // Map to ensure profiles data is properly structured
-      const enrichedAppointments = appointmentsData.map(apt => ({
+      // Map to ensure profiles data is properly structured even if not joined
+      const enrichedAppointments = appointmentsData.map((apt: any) => ({
         ...apt,
-        profiles: apt.profiles || { full_name: 'Unknown' }
+        profiles: (apt as any).profiles || { full_name: 'Unknown' },
       }));
+
       
       setAppointments(enrichedAppointments as any);
       
